@@ -1,0 +1,34 @@
+{
+  "name": "@exoplay/exobot-plugin-calendar",
+  "version": "1.0.0",
+  "description": "exobot plugin for calendar events",
+  "main": "calendar.js",
+  "scripts": {
+    "build": "exobot build -i src/calendar.js -o calendar.js",
+    "watch": "exobot build --watch -i src/calendar.js -o calendar.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exoplay/exobot-plugin-calendar.git"
+  },
+  "keywords": [
+    "exobot",
+    "chat",
+    "bot",
+    "plugin",
+    "calendar"
+  ],
+  "author": "Jack Lawson <ajacksified@gmail.com>",
+  "license": "LGPL",
+  "bugs": {
+    "url": "https://github.com/exoplay/exobot-plugin-calendar/issues"
+  },
+  "homepage": "https://github.com/exoplay/exobot-plugin-calendar#readme",
+  "peerDependencies": {
+    "@exoplay/exobot": "3.x"
+  },
+  "devDependencies": {
+    "@exoplay/exobot": "3.x",
+    "@exoplay/exobot-build": "^0.0.6"
+  }
+}
