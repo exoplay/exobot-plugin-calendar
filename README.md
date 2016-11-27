@@ -4,8 +4,8 @@ Create and read events with Google Calendar.
 
 ## Usage
 
-`exobot schedule Raid Night every Friday at 9pm PST`
-`exobot events` or `exobot calendar list`
+* `exobot schedule Raid Night every Friday at 9pm PST`
+* `exobot events` or `exobot calendar list`
 
 ## Installation
 
