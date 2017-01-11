@@ -1,4 +1,4 @@
-import { ChatPlugin, respond, help, permissionGroup, PropTypes as T } from '@exoplay/exobot';
+import { ChatPlugin, respond, help, permissionGroup, PropTypes as T, AdapterOperationTypes as AO} from '@exoplay/exobot';
 import moment from 'moment';
 import googleAPI from 'googleapis';
 import googleAuth from 'google-auth-library';
@@ -8,6 +8,8 @@ moment.locale('en', {
     sameElse : 'L LT',
   },
 });
+
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
 export class Calendar extends ChatPlugin {
   name = 'calendar';
@@ -19,8 +21,12 @@ export class Calendar extends ChatPlugin {
     googleTokenType: T.string.isRequired,
     googleRefreshToken: T.string.isRequired,
     googleExpiryDate: T.string.isRequired,
+    calendarId: T.string,
   };
 
+  defaultProps = {
+    calendarId: 'primary',
+  }
   constructor () {
     super(...arguments);
     const redirectUrl = 'urn:ietf:wg:oauth:2.0:oob';
@@ -43,6 +49,39 @@ export class Calendar extends ChatPlugin {
   register (bot) {
     super.register(bot);
   }
+  @permissionGroup('setupPlugin');
+  @help('Calendar setup');
+  @respond(/^Calendar setup/i);
+  setupPlugin (message) {
+    const authUrl = this.auth.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES,
+    });
+    this.bot.emitter.emit(AO.PROMPT_USER, message.adapter, {
+      type: 'calendarSetup',
+      messageText: `Please visit this URL to authorize your API client to use your calendar ${authUrl}`,
+      userId: message.user.id,
+    });
+  }
+
+  saveToken = (data, message) => {
+    if (data.type === 'calendarSetup') {
+      this.bot.log.debug(message.text);
+      oauth2Client.getToken(message.text, function(err, token) {
+      if (err) {
+        console.log('Error while trying to retrieve access token', err);
+        return;
+      }
+      oauth2Client.credentials = token;
+      this.options.googleAccessToken = oauth2Client.credentials.access_token;
+      this.options.googleTokenType = oauth2Client.credentials.token_type;
+      this.options.googleRefreshToken oauth2Client.credentials.refresh_token;
+      this.options.googleExpiryDate oauth2Client.credentials.expiry_date;
+    });
+      return true;
+    }
+    return false;
+  }
 
   @permissionGroup('addEvents');
   @help('Schedule event name on date at time');
@@ -53,7 +92,7 @@ export class Calendar extends ChatPlugin {
     const response = await new Promise((resolve, reject) => {
       calendar.events.quickAdd({
         auth: this.auth,
-        calendarId: 'primary',
+        calendarId: this.options.calendarId,
         text: eventString[1],
       }, (err, data) => {
         if (err) {
@@ -76,7 +115,7 @@ export class Calendar extends ChatPlugin {
     return new Promise((resolve, reject) => {
       calendar.events.list({
         auth: this.auth,
-        calendarId: 'primary',
+        calendarId: this.options.calendarId,
         timeMin: (new Date()).toISOString(),
         maxResults: 5,
         singleEvents: true,
