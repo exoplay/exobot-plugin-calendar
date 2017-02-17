@@ -50,7 +50,7 @@ export default class Calendar extends Plugin {
   @permissionGroup('setupPlugin');
   @help('/Calendar setup to get oAuth URL to allow exobot to see your calendar');
   @respond(/^Calendar setup/i);
-  setupPlugin(message) {
+  setupPlugin(match, message) {
     const authUrl = this.auth.generateAuthUrl({
       access_type: 'offline',
       scope: SCOPES,
@@ -59,7 +59,7 @@ export default class Calendar extends Plugin {
       type: 'calendarSetup',
       messageText: `Please visit this URL to authorize your API client to use your calendar ${authUrl}`,
       userId: message.user.id,
-    });
+    }, this.saveToken);
   }
 
   saveToken = (data, message) => {
