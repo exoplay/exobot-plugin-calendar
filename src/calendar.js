@@ -17,10 +17,10 @@ export default class Calendar extends Plugin {
   static propTypes = {
     googleSecret: T.string.isRequired,
     googleID: T.string.isRequired,
-    googleAccessToken: T.string.isRequired,
-    googleTokenType: T.string.isRequired,
-    googleRefreshToken: T.string.isRequired,
-    googleExpiryDate: T.string.isRequired,
+    googleAccessToken: T.string,
+    googleTokenType: T.string,
+    googleRefreshToken: T.string,
+    googleExpiryDate: T.string,
     calendarId: T.string,
   };
 
@@ -38,18 +38,22 @@ export default class Calendar extends Plugin {
       this.options.googleSecret,
       redirectUrl,
     );
-
-    oauth2Client.credentials.access_token = this.options.googleAccessToken;
-    oauth2Client.credentials.token_type = this.options.googleTokenType;
-    oauth2Client.credentials.refresh_token = this.options.googleRefreshToken;
-    oauth2Client.credentials.expiry_date = this.options.googleExpiryDate;
+    const { googleAccessToken, googleTokenType, googleRefreshToken, googleExpiryDate } = this.options;
+    if (googleAccessToken && googleTokenType && googleRefreshToken && googleExpiryDate) {
+      oauth2Client.credentials.access_token = googleAccessToken;
+      oauth2Client.credentials.token_type = googleTokenType;
+      oauth2Client.credentials.refresh_token = googleRefreshToken;
+      oauth2Client.credentials.expiry_date = googleExpiryDate;
+    } else {
+      this.bot.log.warning('No refresh token present please configure with /calendar setup')
+    }
 
     this.auth = oauth2Client;
   }
 
   @permissionGroup('setupPlugin');
-  @help('/Calendar setup to get oAuth URL to allow exobot to see your calendar');
-  @respond(/^Calendar setup/i);
+  @help('/calendar setup to get oAuth URL to allow exobot to see your calendar');
+  @respond(/^calendar setup$/i);
   setupPlugin(match, message) {
     const authUrl = this.auth.generateAuthUrl({
       access_type: 'offline',
@@ -82,8 +86,8 @@ export default class Calendar extends Plugin {
   }
 
   @permissionGroup('addEvents');
-  @help('/Schedule event name on date at time');
-  @respond(/^(?:schedule)\s*(.+)/i);
+  @help('/schedule event name on date at time');
+  @respond(/^schedule\s+(.+)$/i);
   async quickAddEvents(eventString) {
     const calendar = googleAPI.calendar('v3');
 
@@ -106,8 +110,8 @@ export default class Calendar extends Plugin {
   }
 
   @permissionGroup('public');
-  @help('/Events to list the next 5 events');
-  @respond(/^(?:events|calendar list).*/i);
+  @help('/events to list the next 5 events');
+  @respond(/^events.*/i);
   async listEvents() {
     const calendar = googleAPI.calendar('v3');
     return new Promise((resolve, reject) => {
