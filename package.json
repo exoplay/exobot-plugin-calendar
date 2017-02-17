@@ -1,11 +1,13 @@
 {
   "name": "@exoplay/exobot-plugin-calendar",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "exobot plugin for calendar events",
   "main": "calendar.js",
   "scripts": {
     "build": "exobot build -i src/calendar.js -o calendar.js",
-    "watch": "exobot build --watch -i src/calendar.js -o calendar.js"
+    "watch": "exobot build --watch -i src/calendar.js -o calendar.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "repository": {
     "type": "git",
@@ -24,11 +26,24 @@
     "url": "https://github.com/exoplay/exobot-plugin-calendar/issues"
   },
   "homepage": "https://github.com/exoplay/exobot-plugin-calendar#readme",
-  "peerDependencies": {
-    "@exoplay/exobot": "4.x"
+  "dependencies": {
+    "@exoplay/exobot": ">=4.1 <5",
+    "moment": "^2.17.1",
+    "googleapis": "^16.1.0",
+    "google-auth-library": "^0.10.0"
   },
   "devDependencies": {
-    "@exoplay/exobot": "4.x",
-    "@exoplay/exobot-build": "^0.2.1"
+    "@exoplay/exobot": ">=4.1 <5",
+    "@exoplay/exobot-build": "^0.2.1",
+    "babel-eslint": "^7.1.1",
+    "eslint": "^3.12.2",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-import-resolver-node": "^0.3.0",
+    "eslint-plugin-babel": "^4.0.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.3",
+    "eslint-plugin-react": "^6.6.0",
+    "regenerator-runtime": "^0.9.6",
+    "source-map-support": "^0.4.6"
   }
 }

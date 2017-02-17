@@ -1,20 +1,20 @@
-import { ChatPlugin, respond, help, permissionGroup, PropTypes as T, AdapterOperationTypes as AO} from '@exoplay/exobot';
+import { Plugin, respond, help, permissionGroup, PropTypes as T, AdapterOperationTypes as AO } from '@exoplay/exobot';
 import moment from 'moment';
 import googleAPI from 'googleapis';
-import googleAuth from 'google-auth-library';
+import GoogleAuth from 'google-auth-library';
 
 moment.locale('en', {
   calendar: {
-    sameElse : 'L LT',
+    sameElse: 'L LT',
   },
 });
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
-export class Calendar extends ChatPlugin {
-  name = 'calendar';
+export class Calendar extends Plugin {
+  static type = 'calendar';
 
-  propTypes = {
+  static propTypes = {
     googleSecret: T.string.isRequired,
     googleID: T.string.isRequired,
     googleAccessToken: T.string.isRequired,
@@ -24,18 +24,19 @@ export class Calendar extends ChatPlugin {
     calendarId: T.string,
   };
 
-  defaultProps = {
+  static defaultProps = {
     calendarId: 'primary',
-  }
-  constructor () {
+  };
+
+  constructor() {
     super(...arguments);
     const redirectUrl = 'urn:ietf:wg:oauth:2.0:oob';
-    const oauth = new googleAuth();
+    const oauth = new GoogleAuth();
 
     const oauth2Client = new oauth.OAuth2(
       this.options.googleID,
       this.options.googleSecret,
-      redirectUrl
+      redirectUrl,
     );
 
     oauth2Client.credentials.access_token = this.options.googleAccessToken;
@@ -46,13 +47,10 @@ export class Calendar extends ChatPlugin {
     this.auth = oauth2Client;
   }
 
-  register (bot) {
-    super.register(bot);
-  }
   @permissionGroup('setupPlugin');
   @help('Calendar setup');
   @respond(/^Calendar setup/i);
-  setupPlugin (message) {
+  setupPlugin(message) {
     const authUrl = this.auth.generateAuthUrl({
       access_type: 'offline',
       scope: SCOPES,
@@ -67,17 +65,17 @@ export class Calendar extends ChatPlugin {
   saveToken = (data, message) => {
     if (data.type === 'calendarSetup') {
       this.bot.log.debug(message.text);
-      oauth2Client.getToken(message.text, function(err, token) {
-      if (err) {
-        console.log('Error while trying to retrieve access token', err);
-        return;
-      }
-      oauth2Client.credentials = token;
-      this.options.googleAccessToken = oauth2Client.credentials.access_token;
-      this.options.googleTokenType = oauth2Client.credentials.token_type;
-      this.options.googleRefreshToken oauth2Client.credentials.refresh_token;
-      this.options.googleExpiryDate oauth2Client.credentials.expiry_date;
-    });
+      this.auth.getToken(message.text, (err, token) => {
+        if (err) {
+          this.bot.log.error('Error while trying to retrieve access token', err);
+          return;
+        }
+        this.auth.credentials = token;
+        this.options.googleAccessToken = this.auth.credentials.access_token;
+        this.options.googleTokenType = this.auth.credentials.token_type;
+        this.options.googleRefreshToken = this.auth.credentials.refresh_token;
+        this.options.googleExpiryDate = this.auth.credentials.expiry_date;
+      });
       return true;
     }
     return false;
@@ -131,15 +129,12 @@ export class Calendar extends ChatPlugin {
           resolve('No upcoming events found.');
         } else {
           let eventlist = `${events.length} event${events.length === 1 ? '' : 's'} found\n`;
-          for (let i = 0; i < events.length; i++) {
-            const event = events[i];
+          events.forEach((event) => {
             const date = moment.parseZone(event.start.dateTime);
-
             const start = date.calendar() || event.start.date;
             const fromNow = date.fromNow();
-
             eventlist += `${start} - ${event.summary} (${fromNow})\n`;
-          }
+          });
           resolve(eventlist);
         }
       });
