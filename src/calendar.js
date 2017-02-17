@@ -11,7 +11,7 @@ moment.locale('en', {
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
-export class Calendar extends Plugin {
+export default class Calendar extends Plugin {
   static type = 'calendar';
 
   static propTypes = {
@@ -48,7 +48,7 @@ export class Calendar extends Plugin {
   }
 
   @permissionGroup('setupPlugin');
-  @help('Calendar setup');
+  @help('/Calendar setup to get oAuth URL to allow exobot to see your calendar');
   @respond(/^Calendar setup/i);
   setupPlugin(message) {
     const authUrl = this.auth.generateAuthUrl({
@@ -82,7 +82,7 @@ export class Calendar extends Plugin {
   }
 
   @permissionGroup('addEvents');
-  @help('Schedule event name on date at time');
+  @help('/Schedule event name on date at time');
   @respond(/^(?:schedule)\s*(.+)/i);
   async quickAddEvents(eventString) {
     const calendar = googleAPI.calendar('v3');
@@ -106,7 +106,7 @@ export class Calendar extends Plugin {
   }
 
   @permissionGroup('public');
-  @help('events lists the next 5 events');
+  @help('/Events to list the next 5 events');
   @respond(/^(?:events|calendar list).*/i);
   async listEvents() {
     const calendar = googleAPI.calendar('v3');
